@@ -94,6 +94,11 @@ pytest -v
 - [x] Situation C: Incomplete manifest detection with missing/unused discrepancy warnings
 - [x] Syntax error resilience on invalid Python source files
 - [x] Static analysis API endpoint (`POST /api/analyze/{session_id}`)
+- [x] Curated alias resolution mapping for discrepancy packages (`cv2` -> `opencv-python`, `PIL` -> `Pillow`, `bs4` -> `beautifulsoup4`, etc.)
+- [x] PyPI JSON registry client with local disk/memory caching and PEP 503 normalization
+- [x] Multi-tier confidence scoring (`CONFIDENT`, `PROBABLE`, `UNCERTAIN`, `UNRESOLVED`)
+- [x] Defensive policy: blocking blind installation on unresolved packages with required user review
+- [x] Package resolution API endpoint (`POST /api/resolve/{session_id}`)
 
 ---
 
@@ -101,7 +106,7 @@ pytest -v
 
 - [x] **Phase 1**: Project architecture + ZIP upload + ZIP validation + extraction
 - [x] **Phase 2**: Python language detection + Python AST dependency analysis
-- [ ] **Phase 3**: Python import → package resolution
+- [x] **Phase 3**: Python import → package resolution
 - [ ] **Phase 4**: Python dependency installation in isolated environment
 - [ ] **Phase 5**: Python verification (AST syntax & package existence)
 - [ ] **Phase 6**: Checkpoint & rollback mechanism

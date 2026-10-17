@@ -210,8 +210,78 @@
           </div>
         </div>
 
+        <div class="actions" style="margin-top: 1.5rem;">
+          <button id="resolve-btn" class="btn btn-primary">
+            ⚡ Resolve Packages (Phase 3)
+          </button>
+        </div>
+      </div>
+
+      <!-- Phase 3 Resolution Card -->
+      <div id="resolution-card" class="card resolution-card hidden">
+        <div class="result-header">
+          <div class="result-title-group">
+            <span class="badge success" id="resolution-badge">Phase 3: Resolution Complete</span>
+            <h2>PyPI Import → Package Name Resolution</h2>
+          </div>
+          <div class="session-badge">
+            Target Ecosystem: <code>PyPI (pip)</code>
+          </div>
+        </div>
+
+        <p class="description">
+          AutoEnv translates Python import symbols to their true PyPI distribution package names using curated aliases and official PyPI metadata queries.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">Total Imports</div>
+            <div class="stat-val text-cyan" id="stat-res-total">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Confidently Resolved</div>
+            <div class="stat-val text-success" id="stat-res-resolved">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Uncertain / Heuristic</div>
+            <div class="stat-val text-amber" id="stat-res-uncertain">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Unresolved</div>
+            <div class="stat-val text-red" id="stat-res-unresolved">0</div>
+          </div>
+        </div>
+
+        <!-- Unresolved Alert Card (if any unresolved imports) -->
+        <div id="unresolved-alert-card" class="discrepancy-card hidden" style="border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);">
+          <h4 style="color: #f87171;">🛑 Unresolved Dependencies Detected</h4>
+          <p style="font-size: 0.9rem; color: #fca5a5; margin-bottom: 0.75rem;">
+            AutoEnv will <strong>never blindly install unverified packages</strong>. The following detected imports could not be confidently mapped to a PyPI package:
+          </p>
+          <div id="unresolved-tags-container"></div>
+        </div>
+
+        <!-- Resolution Table -->
+        <div class="dep-table-container">
+          <h3>Resolved Packages Mapping</h3>
+          <table class="dep-table" id="res-table">
+            <thead>
+              <tr>
+                <th>Import Symbol</th>
+                <th>Resolved PyPI Package</th>
+                <th>Confidence</th>
+                <th>Resolution Method</th>
+                <th>Notes / Justification</th>
+              </tr>
+            </thead>
+            <tbody id="res-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
         <div class="next-phase-banner">
-          <p><strong>Phase 2 Complete:</strong> AST static parsing and dependency classification complete without executing untrusted code. Next up is <strong>Phase 3: Import → Package Resolution</strong> (mapping symbols like <code>cv2</code> to <code>opencv-python</code>).</p>
+          <p><strong>Phase 3 Complete:</strong> Import symbols successfully mapped to verified distribution package names. Next up is <strong>Phase 4: Python Dependency Installation</strong> inside an isolated temporary virtual environment.</p>
         </div>
       </div>
 

@@ -318,6 +318,113 @@ document.addEventListener('DOMContentLoaded', () => {
     analyzeBtn.textContent = '✓ Analysis Completed';
   }
 
+  // Phase 3: Package Resolution
+  const resolveBtn = document.getElementById('resolve-btn');
+  const resolutionCard = document.getElementById('resolution-card');
+  const step3 = document.getElementById('step-3');
+  const statResTotal = document.getElementById('stat-res-total');
+  const statResResolved = document.getElementById('stat-res-resolved');
+  const statResUncertain = document.getElementById('stat-res-uncertain');
+  const statResUnresolved = document.getElementById('stat-res-unresolved');
+  const unresolvedAlertCard = document.getElementById('unresolved-alert-card');
+  const unresolvedTagsContainer = document.getElementById('unresolved-tags-container');
+  const resTableBody = document.getElementById('res-table-body');
+
+  if (resolveBtn) {
+    resolveBtn.addEventListener('click', async () => {
+      if (!currentSessionId) return;
+
+      hideError();
+      resolveBtn.disabled = true;
+      resolveBtn.textContent = '⏳ Querying PyPI & Resolving Packages...';
+
+      try {
+        const response = await fetch(`/api/resolve/${currentSessionId}`, {
+          method: 'POST',
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          const errorDetail = data.detail || {};
+          throw new Error(errorDetail.message || 'Resolution failed', { cause: errorDetail });
+        }
+
+        renderResolution(data);
+
+        // Update Stepper
+        step2.classList.remove('active');
+        step2.classList.add('completed');
+        step3.classList.remove('disabled');
+        step3.classList.add('active');
+
+      } catch (err) {
+        resolveBtn.disabled = false;
+        resolveBtn.textContent = '⚡ Resolve Packages (Phase 3)';
+        const detail = err.cause || {};
+        showError(
+          detail.error || 'Resolution Failed',
+          err.message || 'Failed to resolve import packages.',
+          detail.category || 'Resolver'
+        );
+      }
+    });
+  }
+
+  function renderResolution(data) {
+    statResTotal.textContent = data.total_imports || 0;
+    statResResolved.textContent = data.resolved_count || 0;
+    statResUncertain.textContent = data.uncertain_count || 0;
+    statResUnresolved.textContent = data.unresolved_count || 0;
+
+    // Handle Unresolved Alert
+    if (data.unresolved_dependencies && data.unresolved_dependencies.length > 0) {
+      unresolvedAlertCard.classList.remove('hidden');
+      unresolvedTagsContainer.innerHTML = data.unresolved_dependencies
+        .map(u => `<span class="tag tag-missing">${u.import_symbol}</span>`)
+        .join('');
+    } else {
+      unresolvedAlertCard.classList.add('hidden');
+    }
+
+    // Populate Resolution Table
+    resTableBody.innerHTML = '';
+    const allItems = [...(data.resolved_dependencies || []), ...(data.unresolved_dependencies || [])];
+
+    if (allItems.length > 0) {
+      allItems.forEach(item => {
+        const row = document.createElement('tr');
+
+        let confBadge = '';
+        if (item.confidence === 'CONFIDENT') {
+          confBadge = '<span class="badge badge-confident">100% Confident</span>';
+        } else if (item.confidence === 'PROBABLE') {
+          confBadge = '<span class="badge badge-heuristic">75% Probable</span>';
+        } else {
+          confBadge = '<span class="badge badge-unresolved">0% Unresolved</span>';
+        }
+
+        const pkgDisplay = item.package_name
+          ? `<strong style="color: #34d399;">${item.package_name}</strong>`
+          : '<em style="color: #f87171;">None (Unresolved)</em>';
+
+        row.innerHTML = `
+          <td class="dep-name">${item.import_symbol}</td>
+          <td>${pkgDisplay}</td>
+          <td>${confBadge}</td>
+          <td><code style="font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">${item.resolution_method}</code></td>
+          <td style="font-size: 0.85rem; color: #94a3b8;">${item.notes || '-'}</td>
+        `;
+        resTableBody.appendChild(row);
+      });
+    } else {
+      resTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No external packages required resolution.</td></tr>';
+    }
+
+    resolutionCard.classList.remove('hidden');
+    resolveBtn.textContent = '✓ Resolution Completed';
+  }
+
   function showError(title, message, category) {
     errorTitle.textContent = title;
     errorMessage.textContent = message;
@@ -336,6 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fileInfo.classList.add('hidden');
     resultCard.classList.add('hidden');
     analysisCard.classList.add('hidden');
+    if (resolutionCard) resolutionCard.classList.add('hidden');
     hideError();
     uploadBtn.classList.remove('hidden');
     uploadBtn.disabled = true;
@@ -344,9 +452,17 @@ document.addEventListener('DOMContentLoaded', () => {
       analyzeBtn.disabled = false;
       analyzeBtn.textContent = '🔍 Analyze Languages & Dependencies (Phase 2)';
     }
+    if (resolveBtn) {
+      resolveBtn.disabled = false;
+      resolveBtn.textContent = '⚡ Resolve Packages (Phase 3)';
+    }
     step1.classList.remove('completed');
     step1.classList.add('active');
     step2.classList.remove('active');
     step2.classList.add('disabled');
+    if (step3) {
+      step3.classList.remove('active');
+      step3.classList.add('disabled');
+    }
   });
 });

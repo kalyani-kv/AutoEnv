@@ -631,3 +631,24 @@ body {
   background: #10b981;
   color: #000;
 }
+
+/* Phase 3 Resolution Styling */
+.text-red { color: #f87171; }
+
+.badge-confident {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.badge-heuristic {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.badge-unresolved {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}

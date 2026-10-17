@@ -8,6 +8,7 @@ from pathlib import Path
 from .config import STATIC_DIR, MAX_UPLOAD_SIZE_BYTES, MAX_FILE_COUNT, MAX_EXTRACTED_SIZE_BYTES
 from .api.upload import router as upload_router
 from .api.analysis import router as analysis_router
+from .api.resolve import router as resolve_router
 
 app = FastAPI(
     title="AutoEnv API",
@@ -29,6 +30,7 @@ app.add_middleware(
 # Register API routes
 app.include_router(upload_router)
 app.include_router(analysis_router)
+app.include_router(resolve_router)
 
 
 @app.get("/api/health", tags=["System"])
