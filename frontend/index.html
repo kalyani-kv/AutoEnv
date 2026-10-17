@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoEnv — Dependency Reconstruction System</title>
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <div class="brand">
+        <div class="logo-badge">⚡ AutoEnv</div>
+        <p class="subtitle">Multi-Language Automatic Dependency Reconstruction & Environment Recovery System</p>
+      </div>
+      <div class="system-status">
+        <span class="status-indicator online"></span>
+        <span id="system-status-text">Backend Online</span>
+      </div>
+    </header>
+
+    <!-- Phase 1 Progress Pipeline Stepper -->
+    <section class="stepper-section">
+      <div class="stepper">
+        <div class="step active" id="step-1">
+          <div class="step-num">1</div>
+          <div class="step-label">Archive Ingestion & Security</div>
+        </div>
+        <div class="step disabled" id="step-2">
+          <div class="step-num">2</div>
+          <div class="step-label">Language Analysis <span class="badge-soon">Coming Soon</span></div>
+        </div>
+        <div class="step disabled" id="step-3">
+          <div class="step-num">3</div>
+          <div class="step-label">Package Resolution <span class="badge-soon">Coming Soon</span></div>
+        </div>
+        <div class="step disabled" id="step-4">
+          <div class="step-num">4</div>
+          <div class="step-label">Safe Installation <span class="badge-soon">Coming Soon</span></div>
+        </div>
+        <div class="step disabled" id="step-5">
+          <div class="step-num">5</div>
+          <div class="step-label">Verification & Rollback <span class="badge-soon">Coming Soon</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Upload & Ingestion Section -->
+    <main class="main-content">
+      <div class="card upload-card">
+        <h2>Upload Project Archive</h2>
+        <p class="description">
+          Upload an unfamiliar software project in a <code>.zip</code> archive. AutoEnv will inspect the archive for path traversal (ZipSlip), decompression bombs (ZipBomb), and safely extract it into an isolated temporary workspace.
+        </p>
+
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-icon">📦</div>
+          <p class="drop-text">Drag & drop your <strong>project.zip</strong> here</p>
+          <p class="drop-subtext">or click to browse from your computer</p>
+          <input type="file" id="file-input" accept=".zip" hidden>
+          <div id="file-info" class="file-info hidden">
+            <span class="file-icon">📄</span>
+            <span id="file-name" class="file-name"></span>
+            <span id="file-size" class="file-size"></span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="upload-btn" class="btn btn-primary" disabled>
+            Validate & Extract Archive
+          </button>
+          <button id="reset-btn" class="btn btn-secondary hidden">
+            Upload Another
+          </button>
+        </div>
+
+        <!-- In-flight progress bar -->
+        <div id="progress-container" class="progress-container hidden">
+          <div class="progress-bar-track">
+            <div id="progress-bar-fill" class="progress-bar-fill"></div>
+          </div>
+          <span id="progress-status-text" class="progress-status-text">Uploading & validating archive...</span>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div id="result-card" class="card result-card hidden">
+        <div class="result-header">
+          <div class="result-title-group">
+            <span class="badge success">Phase 1 Complete</span>
+            <h2 id="result-project-name">Project Name</h2>
+          </div>
+          <div class="session-badge" title="Isolated Workspace Session ID">
+            Session: <code id="result-session-id">...</code>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">Extracted Files</div>
+            <div class="stat-val" id="stat-file-count">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Uncompressed Size</div>
+            <div class="stat-val" id="stat-total-size">0 KB</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">ZipSlip Status</div>
+            <div class="stat-val text-success">Passed ✓</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">ZipBomb Status</div>
+            <div class="stat-val text-success">Passed ✓</div>
+          </div>
+        </div>
+
+        <div class="extracted-files-section">
+          <h3>Extracted Files in Sandbox</h3>
+          <div class="files-tree" id="files-tree">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="next-phase-banner">
+          <p><strong>Ready for Phase 2:</strong> The project structure is safely isolated in its workspace directory. In Phase 2, AutoEnv will analyze the source code and detect programming languages and import statements.</p>
+        </div>
+      </div>
+
+      <!-- Error / Security Alert Card -->
+      <div id="error-card" class="card error-card hidden">
+        <div class="error-header">
+          <span class="badge error" id="error-badge">Security Rejection</span>
+          <h2 id="error-title">Upload Rejected</h2>
+        </div>
+        <p id="error-message" class="error-message"></p>
+        <div class="error-details">
+          <strong>Category:</strong> <code id="error-category">Unknown</code>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p>AutoEnv — Developer Dependency Reconstruction & Recovery System | Phase 1: Ingestion & Security</p>
+    </footer>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

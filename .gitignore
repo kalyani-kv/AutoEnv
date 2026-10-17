@@ -1,0 +1,30 @@
+# Python Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+
+# Python Caches & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# AutoEnv Session Workspaces & Temporary Uploads
+workspaces/
+temp_uploads/
+*.tmp
+
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# SQLite Databases (if used for session persistence)
+*.db
+*.sqlite3
