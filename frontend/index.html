@@ -124,8 +124,94 @@
           </div>
         </div>
 
+        <div class="actions" style="margin-top: 1.5rem;">
+          <button id="analyze-btn" class="btn btn-primary">
+            🔍 Analyze Languages & Dependencies (Phase 2)
+          </button>
+        </div>
+      </div>
+
+      <!-- Phase 2 Analysis Card -->
+      <div id="analysis-card" class="card analysis-card hidden">
+        <div class="result-header">
+          <div class="result-title-group">
+            <span class="badge success" id="analysis-badge">Phase 2: Analysis Complete</span>
+            <h2>Static Dependency & Language Analysis</h2>
+          </div>
+          <div id="situation-tag" class="situation-tag">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <div class="situation-description-box" id="situation-description-box">
+          <!-- Situation narrative -->
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">Primary Language</div>
+            <div class="stat-val text-cyan" id="stat-primary-lang">-</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">External Dependencies</div>
+            <div class="stat-val text-amber" id="stat-ext-count">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Standard Library</div>
+            <div class="stat-val text-muted-val" id="stat-stdlib-count">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Local Modules</div>
+            <div class="stat-val text-muted-val" id="stat-local-count">0</div>
+          </div>
+        </div>
+
+        <!-- Discrepancy Warnings (Situation C) -->
+        <div id="discrepancy-card" class="discrepancy-card hidden">
+          <h4>⚠️ Dependency Manifest Discrepancies</h4>
+          <div id="missing-deps-list" class="discrepancy-row hidden">
+            <strong>Missing from manifest (imported in code):</strong>
+            <span id="missing-deps-tags"></span>
+          </div>
+          <div id="unused-deps-list" class="discrepancy-row hidden">
+            <strong>Declared in manifest (never imported):</strong>
+            <span id="unused-deps-tags"></span>
+          </div>
+        </div>
+
+        <!-- External Dependencies Table -->
+        <div class="dep-table-container">
+          <h3>External Dependencies Discovered</h3>
+          <table class="dep-table" id="dep-table">
+            <thead>
+              <tr>
+                <th>Import Symbol</th>
+                <th>Category</th>
+                <th>Declared Version</th>
+                <th>Source Files & Line Numbers</th>
+                <th>Manifest Status</th>
+              </tr>
+            </thead>
+            <tbody id="dep-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Standard Library & Local Modules Section -->
+        <div class="modules-grid">
+          <div class="module-box">
+            <h4>Standard Library Modules (No installation needed)</h4>
+            <div class="pill-cloud" id="stdlib-pills"></div>
+          </div>
+          <div class="module-box">
+            <h4>Local Project Modules (Discovered in codebase)</h4>
+            <div class="pill-cloud" id="local-pills"></div>
+          </div>
+        </div>
+
         <div class="next-phase-banner">
-          <p><strong>Ready for Phase 2:</strong> The project structure is safely isolated in its workspace directory. In Phase 2, AutoEnv will analyze the source code and detect programming languages and import statements.</p>
+          <p><strong>Phase 2 Complete:</strong> AST static parsing and dependency classification complete without executing untrusted code. Next up is <strong>Phase 3: Import → Package Resolution</strong> (mapping symbols like <code>cv2</code> to <code>opencv-python</code>).</p>
         </div>
       </div>
 

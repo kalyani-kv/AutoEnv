@@ -10,12 +10,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const progressBarFill = document.getElementById('progress-bar-fill');
   const progressStatusText = document.getElementById('progress-status-text');
 
+  const step1 = document.getElementById('step-1');
+  const step2 = document.getElementById('step-2');
+
   const resultCard = document.getElementById('result-card');
   const resultProjectName = document.getElementById('result-project-name');
   const resultSessionId = document.getElementById('result-session-id');
   const statFileCount = document.getElementById('stat-file-count');
   const statTotalSize = document.getElementById('stat-total-size');
   const filesTree = document.getElementById('files-tree');
+  const analyzeBtn = document.getElementById('analyze-btn');
+
+  // Phase 2 Elements
+  const analysisCard = document.getElementById('analysis-card');
+  const situationTag = document.getElementById('situation-tag');
+  const situationDescBox = document.getElementById('situation-description-box');
+  const statPrimaryLang = document.getElementById('stat-primary-lang');
+  const statExtCount = document.getElementById('stat-ext-count');
+  const statStdlibCount = document.getElementById('stat-stdlib-count');
+  const statLocalCount = document.getElementById('stat-local-count');
+  const discrepancyCard = document.getElementById('discrepancy-card');
+  const missingDepsList = document.getElementById('missing-deps-list');
+  const missingDepsTags = document.getElementById('missing-deps-tags');
+  const unusedDepsList = document.getElementById('unused-deps-list');
+  const unusedDepsTags = document.getElementById('unused-deps-tags');
+  const depTableBody = document.getElementById('dep-table-body');
+  const stdlibPills = document.getElementById('stdlib-pills');
+  const localPills = document.getElementById('local-pills');
 
   const errorCard = document.getElementById('error-card');
   const errorTitle = document.getElementById('error-title');
@@ -23,8 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorCategory = document.getElementById('error-category');
 
   let selectedFile = null;
+  let currentSessionId = null;
 
-  // File size formatter
   function formatBytes(bytes) {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -33,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
-  // File Selection
   function handleFileSelection(file) {
     if (!file) return;
 
@@ -50,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
     hideError();
   }
 
-  // Drag & Drop Events
   dropZone.addEventListener('click', () => fileInput.click());
 
   fileInput.addEventListener('change', (e) => {
@@ -76,13 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Upload & Extraction Handler
+  // Phase 1: Upload & Extraction
   uploadBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
 
-    // Reset UI state
     hideError();
     resultCard.classList.add('hidden');
+    analysisCard.classList.add('hidden');
     uploadBtn.disabled = true;
     progressContainer.classList.remove('hidden');
     progressBarFill.style.width = '30%';
@@ -109,9 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // Success
       progressBarFill.style.width = '100%';
       progressStatusText.textContent = 'Validation & Extraction Complete!';
+      currentSessionId = data.session_id;
 
       setTimeout(() => {
         progressContainer.classList.add('hidden');
@@ -136,7 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
     statFileCount.textContent = data.extracted_file_count;
     statTotalSize.textContent = formatBytes(data.total_size_bytes);
 
-    // Populate file tree
     filesTree.innerHTML = '';
     data.files.forEach(file => {
       const item = document.createElement('div');
@@ -148,6 +166,156 @@ document.addEventListener('DOMContentLoaded', () => {
     resultCard.classList.remove('hidden');
     resetBtn.classList.remove('hidden');
     uploadBtn.classList.add('hidden');
+  }
+
+  // Phase 2: Static Language & Dependency Analysis
+  if (analyzeBtn) {
+    analyzeBtn.addEventListener('click', async () => {
+      if (!currentSessionId) return;
+
+      hideError();
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = '⏳ Analyzing AST & Detecting Dependencies...';
+
+      try {
+        const response = await fetch(`/api/analyze/${currentSessionId}`, {
+          method: 'POST',
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          const errorDetail = data.detail || {};
+          throw new Error(errorDetail.message || 'Analysis failed', { cause: errorDetail });
+        }
+
+        renderAnalysis(data);
+
+        // Update stepper
+        step1.classList.remove('active');
+        step1.classList.add('completed');
+        step2.classList.remove('disabled');
+        step2.classList.add('active');
+
+      } catch (err) {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '🔍 Analyze Languages & Dependencies (Phase 2)';
+        const detail = err.cause || {};
+        showError(
+          detail.error || 'Analysis Failed',
+          err.message || 'Failed to analyze project dependencies.',
+          detail.category || 'Analysis'
+        );
+      }
+    });
+  }
+
+  function renderAnalysis(data) {
+    const summary = data.summary || {};
+    const py = data.python_analysis;
+
+    statPrimaryLang.textContent = summary.primary_language || 'Unknown';
+    statExtCount.textContent = summary.external_dependencies_count || 0;
+    statStdlibCount.textContent = summary.stdlib_modules_count || 0;
+    statLocalCount.textContent = summary.local_modules_count || 0;
+
+    // Render Situation
+    const sitCode = summary.situation || 'SITUATION_B';
+    situationTag.className = 'situation-tag';
+    if (sitCode === 'SITUATION_A') {
+      situationTag.classList.add('situation-a');
+      situationTag.textContent = 'Situation A: Manifest Complete';
+    } else if (sitCode === 'SITUATION_C') {
+      situationTag.classList.add('situation-c');
+      situationTag.textContent = 'Situation C: Incomplete Manifest';
+    } else {
+      situationTag.classList.add('situation-b');
+      situationTag.textContent = 'Situation B: Reconstructed from Code';
+    }
+
+    situationDescBox.textContent = summary.situation_description || 'Static analysis completed.';
+
+    // Render Discrepancies if any
+    if (py && (py.missing_from_manifest.length > 0 || py.unused_in_manifest.length > 0)) {
+      discrepancyCard.classList.remove('hidden');
+
+      if (py.missing_from_manifest.length > 0) {
+        missingDepsList.classList.remove('hidden');
+        missingDepsTags.innerHTML = py.missing_from_manifest
+          .map(pkg => `<span class="tag tag-missing">${pkg}</span>`)
+          .join('');
+      } else {
+        missingDepsList.classList.add('hidden');
+      }
+
+      if (py.unused_in_manifest.length > 0) {
+        unusedDepsList.classList.remove('hidden');
+        unusedDepsTags.innerHTML = py.unused_in_manifest
+          .map(pkg => `<span class="tag tag-unused">${pkg}</span>`)
+          .join('');
+      } else {
+        unusedDepsList.classList.add('hidden');
+      }
+    } else {
+      discrepancyCard.classList.add('hidden');
+    }
+
+    // Render External Dependencies Table
+    depTableBody.innerHTML = '';
+    if (py && py.external_dependencies.length > 0) {
+      py.external_dependencies.forEach(dep => {
+        const row = document.createElement('tr');
+        const isMissing = py.missing_from_manifest.includes(dep.name);
+
+        const statusTag = isMissing
+          ? '<span class="tag tag-missing">Missing from manifest</span>'
+          : '<span class="tag tag-declared">Declared in manifest</span>';
+
+        const sourcesFormatted = dep.source_files
+          .map(f => `${f}`)
+          .join(', ');
+
+        row.innerHTML = `
+          <td class="dep-name">${dep.name}</td>
+          <td><span class="badge" style="background: rgba(6, 182, 212, 0.15); color: #22d3ee;">External</span></td>
+          <td class="dep-version">${dep.version_spec || 'Latest / Undefined'}</td>
+          <td class="dep-files">${sourcesFormatted} (lines: ${dep.line_numbers.join(', ')})</td>
+          <td>${statusTag}</td>
+        `;
+        depTableBody.appendChild(row);
+      });
+    } else {
+      depTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No external dependencies discovered.</td></tr>';
+    }
+
+    // Render Standard Library Pills
+    stdlibPills.innerHTML = '';
+    if (py && py.standard_library_modules.length > 0) {
+      py.standard_library_modules.forEach(mod => {
+        const pill = document.createElement('span');
+        pill.className = 'module-pill';
+        pill.textContent = mod;
+        stdlibPills.appendChild(pill);
+      });
+    } else {
+      stdlibPills.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">None detected</span>';
+    }
+
+    // Render Local Module Pills
+    localPills.innerHTML = '';
+    if (py && py.local_project_modules.length > 0) {
+      py.local_project_modules.forEach(mod => {
+        const pill = document.createElement('span');
+        pill.className = 'module-pill';
+        pill.textContent = mod;
+        localPills.appendChild(pill);
+      });
+    } else {
+      localPills.innerHTML = '<span style="color: var(--text-muted); font-size: 0.8rem;">None detected</span>';
+    }
+
+    analysisCard.classList.remove('hidden');
+    analyzeBtn.textContent = '✓ Analysis Completed';
   }
 
   function showError(title, message, category) {
@@ -163,12 +331,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   resetBtn.addEventListener('click', () => {
     selectedFile = null;
+    currentSessionId = null;
     fileInput.value = '';
     fileInfo.classList.add('hidden');
     resultCard.classList.add('hidden');
+    analysisCard.classList.add('hidden');
     hideError();
     uploadBtn.classList.remove('hidden');
     uploadBtn.disabled = true;
     resetBtn.classList.add('hidden');
+    if (analyzeBtn) {
+      analyzeBtn.disabled = false;
+      analyzeBtn.textContent = '🔍 Analyze Languages & Dependencies (Phase 2)';
+    }
+    step1.classList.remove('completed');
+    step1.classList.add('active');
+    step2.classList.remove('active');
+    step2.classList.add('disabled');
   });
 });

@@ -86,13 +86,21 @@ pytest -v
 - [x] Decompressed size threshold (ZipBomb) rejection
 - [x] API health and configuration validation (`/api/health`)
 - [x] API project upload with session persistence (`/api/upload`)
+- [x] Multi-language detection with `node_modules` and build folder pruning
+- [x] Python AST static import extraction without arbitrary code execution
+- [x] 3-way dependency classification (Standard Library, Local Modules, External Dependencies)
+- [x] Situation A: Validating complete dependency manifests against imports
+- [x] Situation B: Automatic dependency reconstruction from source code when no manifest exists
+- [x] Situation C: Incomplete manifest detection with missing/unused discrepancy warnings
+- [x] Syntax error resilience on invalid Python source files
+- [x] Static analysis API endpoint (`POST /api/analyze/{session_id}`)
 
 ---
 
 ## 🚦 Roadmap
 
 - [x] **Phase 1**: Project architecture + ZIP upload + ZIP validation + extraction
-- [ ] **Phase 2**: Python language detection + Python AST dependency analysis
+- [x] **Phase 2**: Python language detection + Python AST dependency analysis
 - [ ] **Phase 3**: Python import → package resolution
 - [ ] **Phase 4**: Python dependency installation in isolated environment
 - [ ] **Phase 5**: Python verification (AST syntax & package existence)
